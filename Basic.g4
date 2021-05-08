@@ -4,20 +4,20 @@ grammar Basic;
  * Parser Rules
  */
 
-line            : NUMBER statement CR
+line            : number statement CR
                 | statement CR
                 ;
-statement       : PRINT exprlist
-                | IF expression RELOP expression THEN statement
-                | GOTO expression
-                | INPUT varlist
-                | LET VAR ASSIGN expression
-                | GOSUB expression
-                | RETURN
-                | CLEAR
-                | LIST
-                | RUN
-                | END
+statement       : PRINT exprlist                                    # stPrintExprList
+                | IF expression relop expression THEN statement     # stIfThen
+                | GOTO expression                                   # stGotoExpr
+                | INPUT varlist                                     # stInputVarlist
+                | LET VAR ASSIGN expression                         # stLetVarAssign
+                | GOSUB expression                                  # stGosubExpr
+                | RETURN                                            # stReturn
+                | CLEAR                                             # stClear
+                | LIST                                              # stList
+                | RUN                                               # stRun
+                | END                                               # stEnd
                 ;
 
 /*
@@ -25,8 +25,11 @@ statement       : PRINT exprlist
  */
 
 DIGIT           : [0-9] ;
+CHAR            : [a-z] | [A-Z] | '.' ;
 VAR             : [A-Z] ;
-NUMBER          : DIGIT DIGIT* ;
+number          : DIGIT DIGIT* ;
+LPAREN          : '(' ;
+RPAREN          : ')' ;
 PLUS            : '+' ;
 MINUS           : '-' ;
 STAR            : '*' ;
@@ -34,23 +37,27 @@ SLASH           : '/' ;
 ASSIGN          : '=' ;
 GTE             : '>' ;
 LTE             : '<' ;
-RELOP           : LTE (GTE|ASSIGN)*
-                | GTE (LTE|ASSIGN)*
+QUOTE           : '"' ;
+relop           : LTE (GTE|ASSIGN)?
+                | GTE (LTE|ASSIGN)?
                 | ASSIGN
                 ;
 COMMA           : ',' ;
 exprlist        : (string | expression) (COMMA (string | expression) )* ;
 varlist         : VAR (COMMA VAR)* ;
-expression      : (PLUS | MINUS) term ((PLUS | MINUS) term)* ;
+expression      : (PLUS | MINUS)? term ((PLUS | MINUS) term)* ;
 term            : factor ((STAR | SLASH) factor)* ;
-factor          : VAR | NUMBER | (expression) ;
-string          : ' ( | ! | # | $ | - | . | / | DIGIT | : | @ | A | B | C | X | Y | Z )* ' ;
+factor          : VAR                                               # facVar
+                | number                                            # facNumber
+                | LPAREN expression RPAREN                          # facExpr
+                ;
+string          : '"' CHAR* '"' ;
 PRINT           : 'PRINT' ;
-IF              : 'IF' ;
-THEN            : 'THEN' ;
+IF              : 'If' ;
+THEN            : 'Then' ;
 GOTO            : 'GOTO' ;
 INPUT           : 'INPUT' ;
-LET             : 'LET' ;
+LET             : 'Let' ;
 GOSUB           : 'GOSUB' ;
 RETURN          : 'RETURN' ;
 CLEAR           : 'CLEAR' ;
@@ -58,3 +65,4 @@ LIST            : 'LIST' ;
 RUN             : 'RUN' ;
 END             : 'END' ;
 CR              : '\r\n' ;
+WS              : [ ]+ -> skip ;
