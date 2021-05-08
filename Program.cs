@@ -17,7 +17,7 @@ namespace BasicToPy
                     BasicLexer basicLexer = new BasicLexer(inputStream);
                     CommonTokenStream commonTokenStream = new CommonTokenStream(basicLexer);
                     BasicParser basicParser = new BasicParser(commonTokenStream);
-                    var context = basicParser.line();
+                    var context = basicParser.program();
                     PyVisitor visitor = new PyVisitor();
                     string pyCode = visitor.Visit(context);
                     Console.WriteLine(pyCode);

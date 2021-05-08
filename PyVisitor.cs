@@ -7,6 +7,18 @@ namespace BasicToPy
 {
     public class PyVisitor : BasicBaseVisitor<string>
     {
+        public override string VisitProgram([NotNull] BasicParser.ProgramContext context)
+        {
+            string result = "";
+            for (int i = 0; i < context.ChildCount; i++)
+            {
+                string transedLine = Visit(context.line(i));
+                Console.WriteLine(transedLine);
+                result += transedLine + Environment.NewLine;
+            }
+            return result;
+        }
+
         public override string VisitLine([NotNull] BasicParser.LineContext context)
         {
             return Visit(context.statement());
@@ -33,9 +45,34 @@ namespace BasicToPy
             return $"if {expr1} {relop} {expr2}:\n\t{stmt}";
         }
 
+        public override string VisitStInputVarlist([NotNull] BasicParser.StInputVarlistContext context)
+        {
+            return $"{context.VAR().GetText()} = input({context.STRING().GetText()})";
+        }
+
+        public override string VisitStGotoExpr([NotNull] BasicParser.StGotoExprContext context)
+        {
+            throw new Exception("ERROR: Unsupported instruction GOTO!");
+        }
+
+        public override string VisitVarlist([NotNull] BasicParser.VarlistContext context)
+        {
+            string result = Visit(context.vara(1)) + " = " + Visit(context.vara(0));
+            //for (int i = 0; i < context.ChildCount; i++)
+            //{
+            //    result += Visit(context.vara(i));
+            //}
+            return result;
+        }
+
+        public override string VisitVara([NotNull] BasicParser.VaraContext context)
+        {
+            return context.GetText();
+        }
+
         public override string VisitStLetVarAssign([NotNull] BasicParser.StLetVarAssignContext context)
         {
-            return context.GetText().Replace("Let", "Let "); // TODO workaround because we skip any spaces
+            return context.GetText();
         }
 
         public override string VisitExpression([NotNull] BasicParser.ExpressionContext context)
@@ -63,17 +100,12 @@ namespace BasicToPy
 
         public override string VisitFacVar([NotNull] BasicParser.FacVarContext context)
         {
-            return context.VAR().GetText();
+            return context.vara().GetText();
         }
 
         public override string VisitFacNumber([NotNull] BasicParser.FacNumberContext context)
         {
             return context.number().GetText();
-        }
-
-        public override string VisitFacExpr([NotNull] BasicParser.FacExprContext context)
-        {
-            return $"({Visit(context.expression())})";
         }
     }
 }
