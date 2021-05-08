@@ -11,6 +11,7 @@ namespace BasicToPy
         {
             try
             {
+                string pyCode = "";
                 using (StreamReader fileStream = new StreamReader("BasicCode.bas"))
                 {
                     AntlrInputStream inputStream = new AntlrInputStream(fileStream);
@@ -19,9 +20,9 @@ namespace BasicToPy
                     BasicParser basicParser = new BasicParser(commonTokenStream);
                     var context = basicParser.program();
                     PyVisitor visitor = new PyVisitor();
-                    string pyCode = visitor.Visit(context);
-                    Console.WriteLine(pyCode);
+                    pyCode = visitor.Visit(context);
                 }
+                File.WriteAllText("python.py", pyCode);
                 Console.ReadKey();
             }
             catch (Exception ex)

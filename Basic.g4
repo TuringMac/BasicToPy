@@ -42,7 +42,7 @@ statement
    | 'IF' expression relop expression 'THEN'? statement     # stIfThen
    | 'GOTO' number                                          # stGotoExpr
    | 'INPUT' STRING VAR                                     # stInputVarlist
-   | 'LET'? vara '=' expression                             # stLetVarAssign
+   | LET? VAR '=' expression                                # stLetVarAssign
    | 'GOSUB' expression                                     # stGosubExpr
    | 'RETURN'                                               # stReturn
    | 'CLEAR'                                                # stClear
@@ -87,7 +87,9 @@ relop
    | '='
    ;
 
-
+LET
+   : 'LET'
+   ;
 STRING
    : '"' ~ ["\r\n]* '"'
    ;

@@ -7,6 +7,7 @@ namespace BasicToPy
 {
     public class PyVisitor : BasicBaseVisitor<string>
     {
+        HashSet<char> definedVars = new HashSet<char>();
         public override string VisitProgram([NotNull] BasicParser.ProgramContext context)
         {
             string result = "";
@@ -47,7 +48,7 @@ namespace BasicToPy
 
         public override string VisitStInputVarlist([NotNull] BasicParser.StInputVarlistContext context)
         {
-            return $"{context.VAR().GetText()} = input({context.STRING().GetText()})";
+            return $"{context.VAR().GetText()} = int(input({context.STRING().GetText()}))";
         }
 
         public override string VisitStGotoExpr([NotNull] BasicParser.StGotoExprContext context)
@@ -72,7 +73,12 @@ namespace BasicToPy
 
         public override string VisitStLetVarAssign([NotNull] BasicParser.StLetVarAssignContext context)
         {
-            return context.GetText();
+            char var = context.VAR().GetText()[0];
+            if (!definedVars.Contains(var))
+                definedVars.Add(var);
+            else if (!string.IsNullOrWhiteSpace(context.LET()?.GetText()))
+                throw new Exception("ERROR: Variable already defined!");
+            return $"{var} = {Visit(context.expression())}";
         }
 
         public override string VisitExpression([NotNull] BasicParser.ExpressionContext context)
