@@ -1,2 +1,2 @@
-antlr4 -Dlanguage=CSharp -visitor Basic.g4
+antlr4 -Dlanguage=CSharp -no-listener -visitor Basic.g4
 @pause

@@ -8,6 +8,7 @@ namespace BasicToPy
     public class PyVisitor : BasicBaseVisitor<string>
     {
         HashSet<char> definedVars = new HashSet<char>();
+        List<string> imports = new List<string>();
         public override string VisitProgram([NotNull] BasicParser.ProgramContext context)
         {
             string result = "";
@@ -17,6 +18,8 @@ namespace BasicToPy
                 Console.WriteLine(transedLine);
                 result += transedLine + Environment.NewLine;
             }
+            if (imports.Count > 0)
+                result = string.Join(Environment.NewLine, imports.ToArray()) + Environment.NewLine + result;
             return result;
         }
 
@@ -48,7 +51,11 @@ namespace BasicToPy
 
         public override string VisitStInputVarlist([NotNull] BasicParser.StInputVarlistContext context)
         {
-            return $"{context.VAR().GetText()} = int(input({context.STRING().GetText()}))";
+            char var = context.VAR().GetText()[0];
+            string translated = $"{var} = int(input({context.STRING().GetText()}))";
+            if (!definedVars.Contains(var))
+                definedVars.Add(var);
+            return translated;
         }
 
         public override string VisitStGotoExpr([NotNull] BasicParser.StGotoExprContext context)
@@ -81,25 +88,41 @@ namespace BasicToPy
             return $"{var} = {Visit(context.expression())}";
         }
 
-        public override string VisitExpression([NotNull] BasicParser.ExpressionContext context)
+        public override string VisitExpSingle([NotNull] BasicParser.ExpSingleContext context)
         {
-            return context.GetText();
-            //string sign1 = "";
-            //string pl = context.PLUS(0)?.GetText();
-            //if (!string.IsNullOrWhiteSpace(pl))
-            //    sign1 += pl;
-            //string min1 = context.MINUS(0)?.GetText();
-            //if (!string.IsNullOrWhiteSpace(min1))
-            //    sign1 += min1;
-            //string term1 = sign1 + Visit(context.term(0));
-
-            //foreach(string term in context.)
-            //return Visit(); // TODO add multiple Add/Sub operations
+            return context.sign?.Text + Visit(context.term());
         }
+
+        public override string VisitExpDuo([NotNull] BasicParser.ExpDuoContext context)
+        {
+            return Visit(context.expression()) + context.op.Text + Visit(context.term());
+        }
+
+        //public override string VisitExpression([NotNull] BasicParser.ExpressionContext context)
+        //{
+        //    string result = context.sign?.Text + Visit(context.term(0));
+        //    int count = context.ChildCount - 1;
+        //    if (context.sign != null)
+        //        count--;
+        //    count = count / 2;
+        //    for (int i = 1; i < count; i++)
+        //    {
+        //        result += context.op.Text + Visit(context.term(i));
+        //    }
+
+        //    return result;
+        //}
 
         public override string VisitTerm([NotNull] BasicParser.TermContext context)
         {
-            return context.GetText();
+            char var = Visit(context.factor(0))[0];
+            if (!char.IsUpper(var))
+                return context.GetText();
+
+            if (definedVars.Contains(var))
+                return context.GetText();
+            else
+                throw new Exception("ERROR: Using not defined variable! " + var);
             //return Visit(context.factor(0)); // TODO add multiple Mul/Devide operations
             //return Visit(context.factor(0)) + " " + Visit(context.STAR(0)) + " " + Visit(context.factor(1));
         }
@@ -112,6 +135,19 @@ namespace BasicToPy
         public override string VisitFacNumber([NotNull] BasicParser.FacNumberContext context)
         {
             return context.number().GetText();
+        }
+
+        public override string VisitStRem([NotNull] BasicParser.StRemContext context)
+        {
+            return "# " + context.STRING().GetText();
+        }
+
+        public override string VisitStRnd([NotNull] BasicParser.StRndContext context)
+        {
+            string rndImport = "import random";
+            if (!imports.Contains(rndImport))
+                imports.Add(rndImport);
+            return context.VAR().GetText() + " = random.randrange(32565)";
         }
     }
 }

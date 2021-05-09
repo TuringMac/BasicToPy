@@ -41,7 +41,7 @@ statement
    : 'PRINT' exprlist                                       # stPrintExprList
    | 'IF' expression relop expression 'THEN'? statement     # stIfThen
    | 'GOTO' number                                          # stGotoExpr
-   | 'INPUT' STRING VAR                                     # stInputVarlist
+   | 'INPUT' STRING ','? VAR                                # stInputVarlist
    | LET? VAR '=' expression                                # stLetVarAssign
    | 'GOSUB' expression                                     # stGosubExpr
    | 'RETURN'                                               # stReturn
@@ -49,6 +49,8 @@ statement
    | 'LIST'                                                 # stList
    | 'RUN'                                                  # stRun
    | 'END'                                                  # stEnd
+   | 'REM' STRING                                           # stRem
+   | 'RND' VAR                                              # stRnd
    ;
 
 exprlist
@@ -60,7 +62,8 @@ varlist
    ;
 
 expression
-   : ('+' | '-' )? term (('+' | '-') term)*
+   : sign=(PLUS | MINUS )? term                             # expSingle
+   | expression (op=(PLUS | MINUS) term)                    # expDuo
    ;
 
 term
@@ -87,6 +90,12 @@ relop
    | '='
    ;
 
+PLUS
+   : '+'
+   ;
+MINUS
+   : '-'
+   ;
 LET
    : 'LET'
    ;
