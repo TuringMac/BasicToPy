@@ -95,7 +95,7 @@ namespace BasicToPy
 
         public override string VisitExpDuo([NotNull] BasicParser.ExpDuoContext context)
         {
-            return Visit(context.expression()) + context.op.Text + Visit(context.term());
+            return Visit(context.expression()) + " " + context.op.Text + " " + Visit(context.term());
         }
 
         //public override string VisitExpression([NotNull] BasicParser.ExpressionContext context)
@@ -113,23 +113,37 @@ namespace BasicToPy
         //    return result;
         //}
 
-        public override string VisitTerm([NotNull] BasicParser.TermContext context)
+        public override string VisitTermSingle([NotNull] BasicParser.TermSingleContext context)
         {
-            char var = Visit(context.factor(0))[0];
-            if (!char.IsUpper(var))
-                return context.GetText();
-
-            if (definedVars.Contains(var))
-                return context.GetText();
-            else
-                throw new Exception("ERROR: Using not defined variable! " + var);
-            //return Visit(context.factor(0)); // TODO add multiple Mul/Devide operations
-            //return Visit(context.factor(0)) + " " + Visit(context.STAR(0)) + " " + Visit(context.factor(1));
+            return Visit(context.factor());
         }
+
+        public override string VisitTermDuo([NotNull] BasicParser.TermDuoContext context)
+        {
+            return Visit(context.term()) + " " + context.op.Text + " " + Visit(context.factor());
+        }
+
+        //public override string VisitTerm([NotNull] BasicParser.TermContext context)
+        //{
+        //    char var = Visit(context.factor())[0];
+        //    if (!char.IsUpper(var))
+        //        return context.GetText();
+
+        //    if (definedVars.Contains(var))
+        //        return context.GetText();
+        //    else
+        //        throw new Exception("ERROR: Using not defined variable! " + var);
+        //    //return Visit(context.factor(0)); // TODO add multiple Mul/Devide operations
+        //    //return Visit(context.factor(0)) + " " + Visit(context.STAR(0)) + " " + Visit(context.factor(1));
+        //}
 
         public override string VisitFacVar([NotNull] BasicParser.FacVarContext context)
         {
-            return context.vara().GetText();
+            char var = context.vara().GetText()[0];
+            if (definedVars.Contains(var))
+                return var.ToString();
+            else
+                throw new Exception("ERROR: Using not defined variable! " + var);
         }
 
         public override string VisitFacNumber([NotNull] BasicParser.FacNumberContext context)

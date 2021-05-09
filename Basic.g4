@@ -67,7 +67,8 @@ expression
    ;
 
 term
-   : factor (('*' | '/') factor)*
+   : factor                                                 # termSingle
+   | term (op=(STAR | SLASH) factor)                        # termDuo   
    ;
 
 factor
@@ -95,6 +96,12 @@ PLUS
    ;
 MINUS
    : '-'
+   ;
+STAR
+   : '*'
+   ;
+SLASH
+   : '/'
    ;
 LET
    : 'LET'
