@@ -11,6 +11,7 @@ namespace BasicToPy
         {
             try
             {
+                // TODO translate all BAS files in the folder
                 string pyCode = "";
                 using (StreamReader fileStream = new StreamReader("BasicCode.bas"))
                 {

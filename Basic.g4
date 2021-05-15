@@ -39,10 +39,10 @@ line
 
 statement
    : 'PRINT' exprlist                                       # stPrintExprList
-   | 'IF' expression relop expression 'THEN'? statement     # stIfThen
+   | 'IF' expression relop expression 'THEN' statement     # stIfThen
    | 'GOTO' number                                          # stGotoExpr
-   | 'INPUT' vara ','? VAR                                # stInputVarlist
-   | LET? VAR '=' expression                                # stLetVarAssign
+   | 'INPUT' vara ',' VAR                                  # stInputVarlist
+   | 'LET' VAR '=' expression                               # stLetVarAssign
    | 'GOSUB' expression                                     # stGosubExpr
    | 'RETURN'                                               # stReturn
    | 'CLEAR'                                                # stClear
@@ -75,6 +75,7 @@ term
 factor
    : vara                                                   # facVar
    | number                                                 # facNumber
+   | '(' expression ')'                                     # facExpr
    ;
 
 vara
@@ -103,9 +104,6 @@ STAR
    ;
 SLASH
    : '/'
-   ;
-LET
-   : 'LET'
    ;
 TYPE
    : 'INTEGER'

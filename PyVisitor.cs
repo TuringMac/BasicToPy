@@ -190,6 +190,11 @@ namespace BasicToPy
             return context.number().GetText();
         }
 
+        public override string VisitFacExpr([NotNull] BasicParser.FacExprContext context)
+        {
+            return "(" + Visit(context.expression()) + ")";
+        }
+
         public override string VisitStRem([NotNull] BasicParser.StRemContext context)
         {
             return "# " + context.STRING().GetText();
