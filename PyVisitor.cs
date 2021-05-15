@@ -1,6 +1,7 @@
 ﻿using Antlr4.Runtime.Misc;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace BasicToPy
@@ -9,6 +10,11 @@ namespace BasicToPy
     {
         HashSet<char> definedVars = new HashSet<char>();
         List<string> imports = new List<string>();
+        Dictionary<string, string> definedSubs = new Dictionary<string, string>();
+        string SubProg = ""; // current subprog processing
+        List<string> subsMarks = new List<string>(); // links to subprogs defined by calls
+        const string TAB = "    ";
+
         public override string VisitProgram([NotNull] BasicParser.ProgramContext context)
         {
             string result = "";
@@ -20,13 +26,32 @@ namespace BasicToPy
                 Console.WriteLine(transedLine);
                 result += transedLine + Environment.NewLine;
             }
+
+            if (definedSubs.Count > 0)
+                result = string.Join(Environment.NewLine, definedSubs.Values.ToArray()) + Environment.NewLine + result;
             if (imports.Count > 0)
                 result = string.Join(Environment.NewLine, imports.ToArray()) + Environment.NewLine + result;
+
             return result;
         }
 
         public override string VisitLine([NotNull] BasicParser.LineContext context)
         {
+            string lineMark = "";
+            if (context.number() != null)
+                lineMark = Visit(context.number());
+            if (!string.IsNullOrWhiteSpace(SubProg))
+            {
+                definedSubs[SubProg] += Environment.NewLine + TAB + Visit(context.statement()).Replace(Environment.NewLine + TAB, Environment.NewLine + TAB + TAB); // Add extra TAB for if statement in the subproc
+                return "";
+            }
+            if (!string.IsNullOrWhiteSpace(lineMark) && subsMarks.Contains(lineMark))
+            {
+                SubProg = lineMark;
+                definedSubs[SubProg] = $"def f{lineMark}():" +
+                    Environment.NewLine + TAB + Visit(context.statement()).Replace(Environment.NewLine + TAB, Environment.NewLine + TAB + TAB); // Add extra TAB for if statement in the subproc
+                return "";
+            }
             return Visit(context.statement());
         }
 
@@ -48,7 +73,7 @@ namespace BasicToPy
             string relop = context.relop().GetText();
             string expr2 = Visit(context.expression(1));
             string stmt = Visit(context.statement());
-            return $"if {expr1} {relop} {expr2}:\n\t{stmt}";
+            return $"if {expr1} {relop} {expr2}:" + Environment.NewLine + TAB + stmt;
         }
 
         public override string VisitStInputVarlist([NotNull] BasicParser.StInputVarlistContext context)
@@ -176,6 +201,24 @@ namespace BasicToPy
             if (!imports.Contains(rndImport))
                 imports.Add(rndImport);
             return context.VAR().GetText() + " = random.randrange(32565)";
+        }
+
+        public override string VisitStGosubExpr([NotNull] BasicParser.StGosubExprContext context)
+        {
+            string expr = Visit(context.expression());
+            subsMarks.Add(expr);
+            return $"f{expr}()";
+        }
+
+        public override string VisitStReturn([NotNull] BasicParser.StReturnContext context)
+        {
+            SubProg = "";
+            return Environment.NewLine + Environment.NewLine;
+        }
+
+        public override string VisitNumber([NotNull] BasicParser.NumberContext context)
+        {
+            return context.GetText();
         }
     }
 }
