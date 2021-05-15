@@ -41,7 +41,7 @@ statement
    : 'PRINT' exprlist                                       # stPrintExprList
    | 'IF' expression relop expression 'THEN'? statement     # stIfThen
    | 'GOTO' number                                          # stGotoExpr
-   | 'INPUT' STRING ','? VAR                                # stInputVarlist
+   | 'INPUT' vara ','? VAR                                # stInputVarlist
    | LET? VAR '=' expression                                # stLetVarAssign
    | 'GOSUB' expression                                     # stGosubExpr
    | 'RETURN'                                               # stReturn
@@ -51,6 +51,7 @@ statement
    | 'END'                                                  # stEnd
    | 'REM' STRING                                           # stRem
    | 'RND' VAR                                              # stRnd
+   | 'DIM' VAR 'AS' TYPE                                    # stDim
    ;
 
 exprlist
@@ -77,8 +78,8 @@ factor
    ;
 
 vara
-    : VAR
-    | STRING
+    : VAR                                                   # varaVar
+    | STRING                                                # varaStr
     ;
 
 number
@@ -105,6 +106,13 @@ SLASH
    ;
 LET
    : 'LET'
+   ;
+TYPE
+   : 'INTEGER'
+   | 'LONG'
+   | 'SINGLE'
+   | 'DOUBLE'
+   | 'STRING'
    ;
 STRING
    : '"' ~ ["\r\n]* '"'

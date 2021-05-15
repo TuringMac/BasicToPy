@@ -15,6 +15,8 @@ namespace BasicToPy
             for (int i = 0; i < context.ChildCount; i++)
             {
                 string transedLine = Visit(context.line(i));
+                if (string.IsNullOrWhiteSpace(transedLine))
+                    continue;
                 Console.WriteLine(transedLine);
                 result += transedLine + Environment.NewLine;
             }
@@ -52,9 +54,9 @@ namespace BasicToPy
         public override string VisitStInputVarlist([NotNull] BasicParser.StInputVarlistContext context)
         {
             char var = context.VAR().GetText()[0];
-            string translated = $"{var} = int(input({context.STRING().GetText()}))";
             if (!definedVars.Contains(var))
-                definedVars.Add(var);
+                throw new Exception("ERROR: Using not defined variable! " + var);
+            string translated = $"{var} = int(input({Visit(context.vara())}))";
             return translated;
         }
 
@@ -73,18 +75,24 @@ namespace BasicToPy
             return result;
         }
 
-        public override string VisitVara([NotNull] BasicParser.VaraContext context)
+        public override string VisitVaraVar([NotNull] BasicParser.VaraVarContext context)
         {
-            return context.GetText();
+            char var = context.VAR().GetText()[0];
+            if (!definedVars.Contains(var))
+                throw new Exception("ERROR: Using not defined variable! " + var);
+            return var.ToString();
+        }
+
+        public override string VisitVaraStr([NotNull] BasicParser.VaraStrContext context)
+        {
+            return context.STRING().GetText();
         }
 
         public override string VisitStLetVarAssign([NotNull] BasicParser.StLetVarAssignContext context)
         {
             char var = context.VAR().GetText()[0];
             if (!definedVars.Contains(var))
-                definedVars.Add(var);
-            else if (!string.IsNullOrWhiteSpace(context.LET()?.GetText()))
-                throw new Exception("ERROR: Variable already defined!");
+                throw new Exception("ERROR: Using not defined variable! " + var);
             return $"{var} = {Visit(context.expression())}";
         }
 
@@ -137,13 +145,19 @@ namespace BasicToPy
         //    //return Visit(context.factor(0)) + " " + Visit(context.STAR(0)) + " " + Visit(context.factor(1));
         //}
 
+        public override string VisitStDim([NotNull] BasicParser.StDimContext context)
+        {
+            char var = context.VAR().GetText()[0];
+            if (definedVars.Contains(var))
+                throw new Exception("ERROR: Variable already defined!");
+            else
+                definedVars.Add(var);
+            return "";
+        }
+
         public override string VisitFacVar([NotNull] BasicParser.FacVarContext context)
         {
-            char var = context.vara().GetText()[0];
-            if (definedVars.Contains(var))
-                return var.ToString();
-            else
-                throw new Exception("ERROR: Using not defined variable! " + var);
+            return Visit(context.vara());
         }
 
         public override string VisitFacNumber([NotNull] BasicParser.FacNumberContext context)
