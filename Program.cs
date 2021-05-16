@@ -16,7 +16,7 @@ namespace BasicToPy
         {
             if (args.Length > 0)
             {
-                if (string.Equals(args[0], "-test"))
+                if (string.Equals(args[0], "-tests"))
                 {
                     var filenames = Directory.GetFiles("Tests", "*.bas");
                     foreach (var filename in filenames)
@@ -44,11 +44,22 @@ namespace BasicToPy
                     BasicLexer basicLexer = new BasicLexer(inputStream);
                     CommonTokenStream commonTokenStream = new CommonTokenStream(basicLexer);
                     BasicParser basicParser = new BasicParser(commonTokenStream);
+                    PyErrorListener pyErrorListener = new PyErrorListener();
+                    basicParser.AddErrorListener(pyErrorListener);
                     var context = basicParser.program();
-                    PyVisitor visitor = new PyVisitor();
-                    pyCode = visitor.Visit(context);
+                    if (pyErrorListener.ExceptionList.Count > 0)
+                    {
+                        foreach (var msg in pyErrorListener.ExceptionList)
+                            Console.WriteLine(msg);
+                    }
+                    else
+                    {
+                        PyVisitor visitor = new PyVisitor();
+                        pyCode = visitor.Visit(context);
+                        File.WriteAllText(Path.ChangeExtension(filename, "py"), pyCode);
+                        Console.WriteLine("Successfull translated");
+                    }
                 }
-                File.WriteAllText(Path.ChangeExtension(filename, "py"), pyCode);
             }
             catch (Exception ex)
             {

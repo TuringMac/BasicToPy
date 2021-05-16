@@ -20,6 +20,8 @@ namespace BasicToPy
             string result = "";
             for (int i = 0; i < context.ChildCount; i++)
             {
+                if (context.line(i) == null) // Empty lines
+                    continue;
                 string transedLine = Visit(context.line(i));
                 if (string.IsNullOrWhiteSpace(transedLine))
                     continue;
@@ -72,7 +74,7 @@ namespace BasicToPy
             // if expr1 relop expr2:
             //     stmt
             string expr1 = Visit(context.expression(0));
-            string relop = context.relop().GetText();
+            string relop = Visit(context.relop());
             string expr2 = Visit(context.expression(1));
             string stmt = Visit(context.statement());
             return $"if {expr1} {relop} {expr2}:" + Environment.NewLine + TAB + stmt;
@@ -216,5 +218,14 @@ namespace BasicToPy
         {
             return context.GetText();
         }
+
+        #region Undefined rules
+
+        public override string VisitRelop([NotNull] BasicParser.RelopContext context)
+        {
+            return context.GetText();
+        }
+
+        #endregion Undefined rules
     }
 }
