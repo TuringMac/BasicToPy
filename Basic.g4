@@ -39,9 +39,9 @@ line
 
 statement
    : 'PRINT' exprlist                                       # stPrintExprList
-   | 'IF' expression relop expression 'THEN' statement     # stIfThen
+   | 'IF' expression relop expression 'THEN' statement      # stIfThen
    | 'GOTO' number                                          # stGotoExpr
-   | 'INPUT' vara ',' VAR                                  # stInputVarlist
+   | 'INPUT' varlist                                        # stInputVarlist
    | 'LET' VAR '=' expression                               # stLetVarAssign
    | 'GOSUB' expression                                     # stGosubExpr
    | 'RETURN'                                               # stReturn
@@ -55,11 +55,13 @@ statement
    ;
 
 exprlist
-   : (STRING | expression) (',' (STRING | expression))*
+   : (STRING | expression)
+   | exprlist ',' (STRING | expression)
    ;
 
 varlist
-   : vara (',' vara)*
+   : VAR
+   | varlist ',' VAR
    ;
 
 expression
@@ -73,15 +75,10 @@ term
    ;
 
 factor
-   : vara                                                   # facVar
+   : VAR                                                    # facVar
    | number                                                 # facNumber
    | '(' expression ')'                                     # facExpr
    ;
-
-vara
-    : VAR                                                   # varaVar
-    | STRING                                                # varaStr
-    ;
 
 number
    : DIGIT +

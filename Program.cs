@@ -7,13 +7,38 @@ namespace BasicToPy
 {
     class Program
     {
+        /// <summary>
+        /// -test arg for autotest
+        /// -f BasicCode.bas
+        /// </summary>
+        /// <param name="args"></param>
         static void Main(string[] args)
+        {
+            if (args.Length > 0)
+            {
+                if (string.Equals(args[0], "-test"))
+                {
+                    var filenames = Directory.GetFiles("Tests", "*.bas");
+                    foreach (var filename in filenames)
+                        Translate(filename);
+                }
+                else if (args.Length == 2 && string.Equals(args[0], "-f"))
+                {
+                    Translate(args[1]);
+                }
+            }
+            else
+                Console.WriteLine("BasicToPy.exe [-test] [-f <filename.bas>]");
+            Console.ReadKey();
+        }
+
+        static void Translate(string filename)
         {
             try
             {
-                // TODO translate all BAS files in the folder
+                Console.WriteLine("---=== " + filename + " ===---");
                 string pyCode = "";
-                using (StreamReader fileStream = new StreamReader("BasicCode.bas"))
+                using (StreamReader fileStream = new StreamReader(filename))
                 {
                     AntlrInputStream inputStream = new AntlrInputStream(fileStream);
                     BasicLexer basicLexer = new BasicLexer(inputStream);
@@ -23,12 +48,11 @@ namespace BasicToPy
                     PyVisitor visitor = new PyVisitor();
                     pyCode = visitor.Visit(context);
                 }
-                File.WriteAllText("python.py", pyCode);
-                Console.ReadKey();
+                File.WriteAllText(Path.ChangeExtension(filename, "py"), pyCode);
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error: " + ex);
+                Console.WriteLine(filename + " Error: " + ex);
             }
         }
     }
