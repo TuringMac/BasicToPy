@@ -22,6 +22,9 @@
     <None Update="Tests\IfThenStmt.bas">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Tests\LexError.bas">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Tests\SubProc.bas">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
